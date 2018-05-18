@@ -1776,6 +1776,14 @@
                                                 id: 'writethrough',
                                                 description: 'Write-through disk caching'
                                             });
+                                            items.push({
+                                                id: 'directsync',
+                                                description: 'Directsync disk caching'
+                                            });
+                                            items.push({
+                                                id: 'unsafe',
+                                                description: 'Unsafe disk caching'
+                                            });
                                             args.response.success({
                                                 data: items
                                             });

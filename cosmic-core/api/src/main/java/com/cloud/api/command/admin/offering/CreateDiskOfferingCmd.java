@@ -12,6 +12,7 @@ import com.cloud.api.response.DomainResponse;
 import com.cloud.legacymodel.storage.DiskOffering;
 import com.cloud.legacymodel.storage.StorageProvisioningType;
 import com.cloud.legacymodel.user.Account;
+import com.cloud.model.enumeration.DiskCacheMode;
 import com.cloud.offering.ServiceOffering;
 
 import org.slf4j.Logger;
@@ -73,6 +74,9 @@ public class CreateDiskOfferingCmd extends BaseCmd {
 
     @Parameter(name = ApiConstants.MAX_IOPS, type = CommandType.LONG, required = false, description = "max iops of the disk offering")
     private Long maxIops;
+
+    @Parameter(name = ApiConstants.CACHE_MODE, type = CommandType.STRING, required = false, description = "cache mode to use")
+    private String cacheMode;
 
     @Parameter(name = ApiConstants.HYPERVISOR_SNAPSHOT_RESERVE,
             type = CommandType.INTEGER,
@@ -150,6 +154,14 @@ public class CreateDiskOfferingCmd extends BaseCmd {
 
     public Integer getHypervisorSnapshotReserve() {
         return hypervisorSnapshotReserve;
+    }
+
+    public DiskCacheMode getCacheMode() {
+        if (cacheMode != null) {
+            return DiskCacheMode.valueOf(cacheMode.toUpperCase());
+        } else {
+            return null;
+        }
     }
 
     /////////////////////////////////////////////////////
