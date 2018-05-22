@@ -979,23 +979,17 @@ public class StorageManagerImpl extends ManagerBase implements StorageManager, C
 
             return true;
         }
+        final Double overProvFactor = CapacityManager.StorageIopsOverprovisioningFactor.valueIn(pool.getId());
+        final Long storagePoolTotalIops = pool.getCapacityIops() * overProvFactor.longValue();
 
-        final StoragePoolVO storagePoolVo = this._storagePoolDao.findById(pool.getId());
-        final long currentIops = this._capacityMgr.getUsedIops(storagePoolVo);
-
-        long requestedIops = 0;
-
-        for (final Volume requestedVolume : requestedVolumes) {
-            final Long minIops = requestedVolume.getMinIops();
-
-            if (minIops != null && minIops > 0) {
-                requestedIops += minIops;
-            }
+        if (!checkUsedIops(pool)) {
+            String msg = String.format("Insufficient IOPS [%f * %d = %d] available on pool: %s",
+                    overProvFactor, pool.getCapacityIops(),
+                    storagePoolTotalIops, _storagePoolDao.findById(pool.getId()).getName());
+            s_logger.debug(msg);
+            return false;
         }
-
-        final long futureIops = currentIops + requestedIops;
-
-        return futureIops <= pool.getCapacityIops();
+        return true;
     }
 
     @Override
@@ -1004,7 +998,7 @@ public class StorageManagerImpl extends ManagerBase implements StorageManager, C
             return false;
         }
 
-        if (!checkUsagedSpace(pool)) {
+        if (!checkUsedSpace(pool)) {
             return false;
         }
 
@@ -1078,7 +1072,7 @@ public class StorageManagerImpl extends ManagerBase implements StorageManager, C
         return true;
     }
 
-    private boolean checkUsagedSpace(final StoragePool pool) {
+    private boolean checkUsedSpace(final StoragePool pool) {
         final StatsCollector sc = StatsCollector.getInstance();
         final double storageUsedThreshold = CapacityManager.StorageCapacityDisableThreshold.valueIn(pool.getDataCenterId());
         if (sc != null) {
@@ -1104,6 +1098,43 @@ public class StorageManagerImpl extends ManagerBase implements StorageManager, C
             return true;
         }
         return false;
+    }
+
+    private boolean checkUsedIops(final StoragePool pool) {
+        final double overProvisioning = CapacityManager.StorageIopsOverprovisioningFactor.valueIn(pool.getDataCenterId());
+        final double totalAvailableIops = pool.getCapacityIops() * overProvisioning;
+        final List<VMInstanceVO> vmInstanceVOList = listByStoragePool(pool.getId());
+        long usedIops = 0;
+        for (VMInstanceVO vmInstance : vmInstanceVOList) {
+            if (vmInstance.getState() != State.Running) {
+                continue;
+            }
+            List<VolumeVO> volumeDao = _volumeDao.findByInstance(vmInstance.getId());
+            for (VolumeVO volume : volumeDao) {
+                long multiplier = 1;
+                DiskOfferingVO diskOfferingVO = _diskOfferingDao.findById(volume.diskOfferingId);
+                Long readIops = diskOfferingVO.getIopsReadRate();
+                Long writeIops = diskOfferingVO.getIopsWriteRate();
+                Long totalIops = diskOfferingVO.getIopsTotalRate();
+                Boolean iopsRatePerGb = diskOfferingVO.getIopsRatePerGb();
+
+                if (iopsRatePerGb != null && iopsRatePerGb) {
+                    multiplier = volume.getSize() >> 30;
+                }
+
+                if (totalIops != null && totalIops > 0) {
+                    usedIops += (totalIops * multiplier);
+                } else {
+                    if (readIops != null && readIops > 0) {
+                        usedIops += (readIops * multiplier);
+                    }
+                    if (writeIops != null && writeIops > 0) {
+                        usedIops += (writeIops * multiplier);
+                    }
+                }
+            }
+        }
+        return usedIops <= totalAvailableIops;
     }
 
     private DiskOfferingVO getDiskOfferingVO(final Volume volume) {

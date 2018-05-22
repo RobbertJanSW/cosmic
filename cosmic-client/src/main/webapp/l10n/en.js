@@ -598,6 +598,7 @@ var dictionary = {
     "label.disk.iops.total": "IOPS Total",
     "label.disk.iops.write.rate": "Disk Write Rate (IOPS)",
     "label.disk.iops.total.rate": "Disk Total Rate (IOPS)",
+    "label.disk.iops.rate.per.gb": "IOPS rate per GB",
     "label.disk.offering": "Disk Offering",
     "label.disk.offering.details": "Disk offering details",
     "label.disk.provisioningtype": "Provisioning Type",

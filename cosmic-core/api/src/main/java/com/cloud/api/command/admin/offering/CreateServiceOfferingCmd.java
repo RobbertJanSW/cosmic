@@ -111,6 +111,12 @@ public class CreateServiceOfferingCmd extends BaseCmd {
     @Parameter(name = ApiConstants.MAX_IOPS, type = CommandType.LONG, required = false, description = "max iops of the compute offering", since = "4.4")
     private Long maxIops;
 
+    @Parameter(name = ApiConstants.IOPS_TOTAL_RATE, type = CommandType.LONG, required = false, description = "io requests generic total rate of the disk offering")
+    private Long iopsTotalRate;
+
+    @Parameter(name = ApiConstants.IOPS_RATE_PER_GB, type = CommandType.BOOLEAN, required = false, description = "io requests per GB")
+    private Boolean iopsRatePerGb;
+
     @Parameter(name = ApiConstants.HYPERVISOR_SNAPSHOT_RESERVE,
             type = CommandType.INTEGER,
             required = false,
@@ -218,6 +224,14 @@ public class CreateServiceOfferingCmd extends BaseCmd {
 
     public Long getIopsWriteRate() {
         return iopsWriteRate;
+    }
+
+    public long getIopsTotalRate() {
+        return iopsTotalRate;
+    }
+
+    public Boolean getIopsRatePerGb() {
+        return iopsRatePerGb;
     }
 
     public Boolean isCustomizedIops() {

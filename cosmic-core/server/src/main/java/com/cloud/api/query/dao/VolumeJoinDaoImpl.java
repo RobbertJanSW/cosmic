@@ -165,6 +165,8 @@ public class VolumeJoinDaoImpl extends GenericDaoBase<VolumeJoinVO, Long> implem
             volResponse.setBytesWriteRate(volume.getBytesReadRate());
             volResponse.setIopsReadRate(volume.getIopsWriteRate());
             volResponse.setIopsWriteRate(volume.getIopsWriteRate());
+            volResponse.setIopsTotalRate(volume.getIopsTotalRate());
+            volResponse.setIopsRatePerGb(volume.getIopsRatePerGb());
         }
 
         if (!_accountMgr.isNormalUser(caller.getId())) {
