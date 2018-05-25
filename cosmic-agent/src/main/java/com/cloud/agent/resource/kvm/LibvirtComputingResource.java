@@ -33,6 +33,7 @@ import com.cloud.agent.resource.kvm.LibvirtVmDef.InputDef;
 import com.cloud.agent.resource.kvm.LibvirtVmDef.InterfaceDef;
 import com.cloud.agent.resource.kvm.LibvirtVmDef.MetadataDef;
 import com.cloud.agent.resource.kvm.LibvirtVmDef.QemuGuestAgentDef;
+import com.cloud.agent.resource.kvm.LibvirtVmDef.HyperVEnlightenmentFeatureDef;
 import com.cloud.agent.resource.kvm.LibvirtVmDef.RngDef;
 import com.cloud.agent.resource.kvm.LibvirtVmDef.ScsiDef;
 import com.cloud.agent.resource.kvm.LibvirtVmDef.SerialDef;
@@ -1398,10 +1399,18 @@ public class LibvirtComputingResource extends AgentResourceBase implements Agent
         vm.addComponent(ctd);
 
         final FeaturesDef features = new FeaturesDef();
-        features.addFeatures("pae");
-        features.addFeatures("apic");
-        features.addFeatures("acpi");
+        features.addFeature("pae");
+        features.addFeature("apic");
+        features.addFeature("acpi");
         vm.addComponent(features);
+
+        final HyperVEnlightenmentFeatureDef hyperVFeatures = new HyperVEnlightenmentFeatureDef();
+        hyperVFeatures.addFeature("relaxed", true);
+        hyperVFeatures.addFeature("vapic", true);
+        hyperVFeatures.addFeature("spinlocks", true);
+        hyperVFeatures.setRetries(8191);
+        features.addHyperVFeature(hyperVFeatures);
+
 
         final TermPolicy term = new TermPolicy();
         if (VirtualMachineType.DomainRouter.equals(vmTo.getType())) {
@@ -1420,13 +1429,13 @@ public class LibvirtComputingResource extends AgentResourceBase implements Agent
             clock.setClockOffset(ClockDef.ClockOffset.LOCALTIME);
         } else if (vmTo.getType() != VirtualMachineType.User || isGuestVirtIoCapable(vmTo.getOs())) {
             if (this.hypervisorLibvirtVersion >= 9 * 1000 + 10) {
-                clock.addTimer("kvmclock", null, null, isKvmclockDisabled());
+                clock.addTimer("kvmclock", null, !isKvmClockDisabled());
             }
         }
 
         // Recommended default clock/timer settings - https://bugzilla.redhat.com/show_bug.cgi?id=1053847
-        clock.addTimer("rtc", "catchup", null);
-        clock.addTimer("pit", "delay", null);
+        clock.addTimer("rtc", "catchup");
+        clock.addTimer("pit", "delay");
 
         vm.addComponent(clock);
 
@@ -1473,8 +1482,8 @@ public class LibvirtComputingResource extends AgentResourceBase implements Agent
         return vm;
     }
 
-    private boolean isKvmclockDisabled() {
-        return this.libvirtComputingResourceProperties.isKvmclockDisable();
+    private boolean isKvmClockDisabled() {
+        return this.libvirtComputingResourceProperties.isKvmClockDisable();
     }
 
     private String getGuestCpuModel() {
