@@ -340,7 +340,7 @@ public class LibvirtDiskDef {
         diskBuilder.append(">\n");
         if (this.qemuDriver) {
             diskBuilder.append("<driver name='qemu'" + " type='" + this.diskFmtType
-                    + "' cache='" + this.diskCacheMode + "' ");
+                    + "' cache='" + this.diskCacheMode.toString().toLowerCase() + "' ");
             if (this.discard != null && this.discard != DiscardType.IGNORE) {
                 diskBuilder.append("discard='" + this.discard.toString() + "' ");
             }
