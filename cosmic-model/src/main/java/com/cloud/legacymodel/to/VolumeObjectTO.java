@@ -1,6 +1,6 @@
 package com.cloud.legacymodel.to;
 
-import com.cloud.legacymodel.storage.DiskOffering.DiskCacheMode;
+import com.cloud.model.enumeration.DiskCacheMode;
 import com.cloud.legacymodel.storage.StorageProvisioningType;
 import com.cloud.model.enumeration.DataObjectType;
 import com.cloud.model.enumeration.HypervisorType;

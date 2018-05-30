@@ -85,6 +85,7 @@ import com.cloud.legacymodel.vm.HostVmStateReportEntry;
 import com.cloud.legacymodel.vm.VirtualMachine.PowerState;
 import com.cloud.legacymodel.vm.VmStatsEntry;
 import com.cloud.model.enumeration.BroadcastDomainType;
+import com.cloud.model.enumeration.DiskCacheMode;
 import com.cloud.model.enumeration.DiskControllerType;
 import com.cloud.model.enumeration.GuestNetType;
 import com.cloud.model.enumeration.HostType;
@@ -1673,7 +1674,7 @@ public class LibvirtComputingResource extends AgentResourceBase implements Agent
                     disk.setIopsWriteRate(volumeObjectTo.getIopsWriteRate());
                 }
                 if (volumeObjectTo.getCacheMode() != null) {
-                    disk.setCacheMode(LibvirtDiskDef.DiskCacheMode.valueOf(volumeObjectTo.getCacheMode().toString().toUpperCase()));
+                    disk.setCacheMode(DiskCacheMode.valueOf(volumeObjectTo.getCacheMode().toString().toUpperCase()));
                 }
             }
             logger.debug("Adding disk: " + disk.toString());

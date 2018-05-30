@@ -3,6 +3,7 @@ package com.cloud.agent.resource.kvm;
 import com.cloud.agent.resource.kvm.LibvirtVmDef.ScsiDef;
 import com.cloud.agent.resource.kvm.xml.LibvirtDiskDef;
 import com.cloud.legacymodel.utils.Pair;
+import com.cloud.model.enumeration.DiskCacheMode;
 import com.cloud.model.enumeration.DiskControllerType;
 import com.cloud.model.enumeration.GuestNetType;
 import com.cloud.model.enumeration.NicModel;
@@ -65,7 +66,7 @@ public class LibvirtVMDefTest extends TestCase {
         final LibvirtDiskDef disk = new LibvirtDiskDef();
         final DiskControllerType bus = DiskControllerType.SCSI;
         final LibvirtDiskDef.DiskFmtType type = LibvirtDiskDef.DiskFmtType.QCOW2;
-        final LibvirtDiskDef.DiskCacheMode cacheMode = LibvirtDiskDef.DiskCacheMode.WRITEBACK;
+        final DiskCacheMode cacheMode = DiskCacheMode.WRITEBACK;
         disk.defFileBasedDisk(filePath, diskLabel, bus, type);
         disk.setCacheMode(cacheMode);
         disk.setDeviceId(deviceId);

@@ -10,7 +10,7 @@ import com.cloud.legacymodel.communication.answer.DownloadAnswer;
 import com.cloud.legacymodel.exceptions.CloudRuntimeException;
 import com.cloud.legacymodel.exceptions.NoTransitionException;
 import com.cloud.legacymodel.statemachine.StateMachine2;
-import com.cloud.legacymodel.storage.DiskOffering.DiskCacheMode;
+import com.cloud.model.enumeration.DiskCacheMode;
 import com.cloud.legacymodel.storage.ObjectInDataStoreStateMachine;
 import com.cloud.legacymodel.storage.StorageProvisioningType;
 import com.cloud.legacymodel.storage.Volume;

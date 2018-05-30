@@ -1,5 +1,6 @@
 package com.cloud.agent.resource.kvm.xml;
 
+import com.cloud.model.enumeration.DiskCacheMode;
 import com.cloud.model.enumeration.DiskControllerType;
 
 public class LibvirtDiskDef {
@@ -308,23 +309,6 @@ public class LibvirtDiskDef {
         @Override
         public String toString() {
             return this.fmtType;
-        }
-    }
-
-    public enum DiskCacheMode {
-        NONE("none"), WRITEBACK("writeback"), WRITETHROUGH("writethrough");
-        String diskCacheMode;
-
-        DiskCacheMode(final String cacheMode) {
-            this.diskCacheMode = cacheMode;
-        }
-
-        @Override
-        public String toString() {
-            if (this.diskCacheMode == null) {
-                return "NONE";
-            }
-            return this.diskCacheMode;
         }
     }
 

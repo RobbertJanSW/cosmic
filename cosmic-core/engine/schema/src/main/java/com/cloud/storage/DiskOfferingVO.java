@@ -2,6 +2,7 @@ package com.cloud.storage;
 
 import com.cloud.legacymodel.storage.DiskOffering;
 import com.cloud.legacymodel.storage.StorageProvisioningType;
+import com.cloud.model.enumeration.DiskCacheMode;
 import com.cloud.utils.db.GenericDao;
 
 import javax.persistence.Column;

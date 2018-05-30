@@ -2,6 +2,7 @@ package com.cloud.legacymodel.storage;
 
 import com.cloud.legacymodel.Identity;
 import com.cloud.legacymodel.InternalIdentity;
+import com.cloud.model.enumeration.DiskCacheMode;
 
 import java.util.Date;
 
@@ -84,20 +85,5 @@ public interface DiskOffering extends Identity, InternalIdentity {
 
     enum Type {
         Disk, Service
-    }
-
-    enum DiskCacheMode {
-        NONE("none"), WRITEBACK("writeback"), WRITETHROUGH("writethrough");
-
-        private final String _diskCacheMode;
-
-        DiskCacheMode(final String cacheMode) {
-            _diskCacheMode = cacheMode;
-        }
-
-        @Override
-        public String toString() {
-            return _diskCacheMode;
-        }
     }
 }

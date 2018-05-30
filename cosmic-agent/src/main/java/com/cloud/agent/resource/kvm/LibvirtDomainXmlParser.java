@@ -4,6 +4,7 @@ import com.cloud.agent.resource.kvm.LibvirtVmDef.InterfaceDef;
 import com.cloud.agent.resource.kvm.LibvirtVmDef.RngDef;
 import com.cloud.agent.resource.kvm.LibvirtVmDef.WatchDogDef;
 import com.cloud.agent.resource.kvm.xml.LibvirtDiskDef;
+import com.cloud.model.enumeration.DiskCacheMode;
 import com.cloud.model.enumeration.DiskControllerType;
 import com.cloud.model.enumeration.NicModel;
 import com.cloud.model.enumeration.RngBackendModel;
@@ -76,7 +77,7 @@ public class LibvirtDomainXmlParser {
                     def.defNetworkBasedDisk(diskPath, host, port, authUserName, poolUuid, diskLabel,
                             DiskControllerType.valueOf(bus.toUpperCase()),
                             LibvirtDiskDef.DiskProtocol.valueOf(protocol.toUpperCase()), fmt);
-                    def.setCacheMode(LibvirtDiskDef.DiskCacheMode.valueOf(diskCacheMode.toUpperCase()));
+                    def.setCacheMode(DiskCacheMode.valueOf(diskCacheMode.toUpperCase()));
                 } else {
                     final String diskFmtType = getAttrValue("driver", "type", disk);
                     final String diskCacheMode = getAttrValue("driver", "cache", disk);
@@ -102,7 +103,7 @@ public class LibvirtDomainXmlParser {
                                 DiskControllerType.valueOf(bus.toUpperCase()));
                     }
                     if (diskCacheMode != null) {
-                        def.setCacheMode(LibvirtDiskDef.DiskCacheMode.valueOf(diskCacheMode.toUpperCase()));
+                        def.setCacheMode(DiskCacheMode.valueOf(diskCacheMode.toUpperCase()));
                     }
                 }
 

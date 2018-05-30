@@ -4,6 +4,7 @@ import com.cloud.agent.resource.kvm.LibvirtVmDef.InterfaceDef;
 import com.cloud.agent.resource.kvm.LibvirtVmDef.RngDef;
 import com.cloud.agent.resource.kvm.LibvirtVmDef.WatchDogDef;
 import com.cloud.agent.resource.kvm.xml.LibvirtDiskDef;
+import com.cloud.model.enumeration.DiskCacheMode;
 import com.cloud.model.enumeration.DiskControllerType;
 import com.cloud.model.enumeration.GuestNetType;
 import com.cloud.model.enumeration.NicModel;
@@ -24,7 +25,7 @@ public class LibvirtDomainXMLParserTest extends TestCase {
         final LibvirtDiskDef.DiskType diskType = LibvirtDiskDef.DiskType.FILE;
         final LibvirtDiskDef.DeviceType deviceType = LibvirtDiskDef.DeviceType.DISK;
         final LibvirtDiskDef.DiskFmtType diskFormat = LibvirtDiskDef.DiskFmtType.QCOW2;
-        final LibvirtDiskDef.DiskCacheMode diskCache = LibvirtDiskDef.DiskCacheMode.NONE;
+        final DiskCacheMode diskCache = DiskCacheMode.NONE;
 
         final NicModel ifModel = NicModel.VIRTIO;
         final GuestNetType ifType = GuestNetType.BRIDGE;
