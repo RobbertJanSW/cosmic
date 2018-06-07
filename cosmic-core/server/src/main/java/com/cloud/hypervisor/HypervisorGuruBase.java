@@ -15,6 +15,8 @@ import com.cloud.model.enumeration.TrafficType;
 import com.cloud.model.enumeration.VirtualMachineType;
 import com.cloud.network.dao.NetworkDao;
 import com.cloud.network.dao.NetworkVO;
+import com.cloud.network.vpc.VpcVO;
+import com.cloud.network.vpc.dao.VpcDao;
 import com.cloud.offering.ServiceOffering;
 import com.cloud.resource.ResourceManager;
 import com.cloud.server.ConfigurationServer;
@@ -37,6 +39,7 @@ import com.cloud.vm.dao.VMInstanceDao;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -60,8 +63,6 @@ public abstract class HypervisorGuruBase extends AdapterBase implements Hypervis
     @Inject
     NicSecondaryIpDao _nicSecIpDao;
     @Inject
-    ConfigurationServer _configServer;
-    @Inject
     ResourceManager _resourceMgr;
     @Inject
     ServiceOfferingDetailsDao _serviceOfferingDetailsDao;
@@ -69,6 +70,8 @@ public abstract class HypervisorGuruBase extends AdapterBase implements Hypervis
     ServiceOfferingDao _serviceOfferingDao;
     @Inject
     DomainDao _domainDao;
+    @Inject
+    VpcDao _vpcDao;
 
     protected HypervisorGuruBase() {
         super();
@@ -144,6 +147,7 @@ public abstract class HypervisorGuruBase extends AdapterBase implements Hypervis
 
         final Map<String, String> resourceDetails = ApiDBUtils.getResourceDetails(vm.getId(), ResourceTag.ResourceObjectType.UserVm);
         final Map<String, String> resourceTags = new HashMap<String, String>();
+        final List<String> vpcNameList = new LinkedList<>();
 
         if (VirtualMachineType.User.equals(vm.getType())) {
             final List<? extends ResourceTag> tags = ApiDBUtils.listByResourceTypeAndId(ResourceTag.ResourceObjectType.UserVm, vm.getId());
@@ -153,6 +157,9 @@ public abstract class HypervisorGuruBase extends AdapterBase implements Hypervis
         }
 
         for (final Long vpcId : vpcList) {
+            final VpcVO vpc = _vpcDao.findById(vpcId);
+            vpcNameList.add(vpc.getName());
+
             final List<? extends ResourceTag> tags = ApiDBUtils.listByResourceTypeAndId(ResourceTag.ResourceObjectType.Vpc, vpcId);
             for (final ResourceTag tag : tags) {
                 resourceTags.put("vpc_" + tag.getKey(), tag.getValue());
@@ -161,6 +168,7 @@ public abstract class HypervisorGuruBase extends AdapterBase implements Hypervis
 
         metadataTO.setResourceDetails(resourceDetails);
         metadataTO.setResourceTags(resourceTags);
+        metadataTO.setVpcNameList(vpcNameList);
         to.setMetadata(metadataTO);
 
         return to;

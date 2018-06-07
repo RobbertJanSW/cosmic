@@ -1287,6 +1287,13 @@ public class LibvirtComputingResource extends AgentResourceBase implements Agent
             metadata.getNodes().put("cosmicInternalVmId", metadataTo.getVmId());
             metadata.getNodes().put("cosmicInstanceName", metadataTo.getInstanceName());
 
+            final List<String> vpcNameList = metadataTo.getVpcNameList();
+            if (vpcNameList != null) {
+                for (final String vpcName : vpcNameList) {
+                    metadata.getNodes().put("cosmicVPC", vpcName);
+                }
+            }
+
             final Map<String, String> vmDetails = metadataTo.getResourceDetails();
             if (vmDetails != null) {
                 for (Map.Entry<String, String> vmDetail : vmDetails.entrySet()) {
