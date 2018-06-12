@@ -273,8 +273,6 @@ public class KvmStorageProcessor implements StorageProcessor {
                 newVol.setFormat(ImageFormat.RAW);
             } else if (vol.getFormat() == PhysicalDiskFormat.QCOW2) {
                 newVol.setFormat(ImageFormat.QCOW2);
-            } else if (vol.getFormat() == PhysicalDiskFormat.DIR) {
-                newVol.setFormat(ImageFormat.DIR);
             }
 
             return new CopyCmdAnswer(newVol);

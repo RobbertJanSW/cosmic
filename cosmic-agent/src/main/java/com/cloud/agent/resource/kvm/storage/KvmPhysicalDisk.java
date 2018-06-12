@@ -90,10 +90,6 @@ public class KvmPhysicalDisk {
                 return PhysicalDiskFormat.RAW;
             case QCOW2:
                 return PhysicalDiskFormat.QCOW2;
-            case DIR:
-                return PhysicalDiskFormat.DIR;
-            case TAR:
-                return PhysicalDiskFormat.TAR;
             default:
                 return PhysicalDiskFormat.QCOW2;
         }

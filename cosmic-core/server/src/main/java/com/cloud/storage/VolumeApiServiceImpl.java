@@ -2333,10 +2333,6 @@ public class VolumeApiServiceImpl extends ManagerBase implements VolumeApiServic
             throw new InvalidParameterValueException("VolumeId: " + volumeId + " is not in " + Volume.State.Ready + " state but " + volume.getState() + ". Cannot take snapshot.");
         }
 
-        if (ImageFormat.DIR.equals(volume.getFormat())) {
-            throw new InvalidParameterValueException("Snapshot not supported for volume:" + volumeId);
-        }
-
         if (volume.getTemplateId() != null) {
             final VMTemplateVO template = this._templateDao.findById(volume.getTemplateId());
             if (template != null && template.getTemplateType() == TemplateType.SYSTEM) {

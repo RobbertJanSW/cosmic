@@ -325,8 +325,6 @@ public class KvmStoragePoolManager {
             return adaptor.createDiskFromTemplate(template, name, PhysicalDiskFormat.RAW, provisioningType, size, destPool, timeout);
         } else if (destPool.getType() == StoragePoolType.LVM) {
             return adaptor.createDiskFromTemplate(template, name, PhysicalDiskFormat.RAW, provisioningType, size, destPool, timeout);
-        } else if (template.getFormat() == PhysicalDiskFormat.DIR) {
-            return adaptor.createDiskFromTemplate(template, name, PhysicalDiskFormat.DIR, provisioningType, size, destPool, timeout);
         } else {
             PhysicalDiskFormat diskFormat = PhysicalDiskFormat.QCOW2;
             if (provisioningType == StorageProvisioningType.RAW) {
@@ -336,21 +334,9 @@ public class KvmStoragePoolManager {
         }
     }
 
-    public KvmPhysicalDisk createTemplateFromDisk(final KvmPhysicalDisk disk, final String name, final PhysicalDiskFormat format, final long size,
-                                                  final KvmStoragePool destPool) {
-        final StorageAdaptor adaptor = getStorageAdaptor(destPool.getType());
-        return adaptor.createTemplateFromDisk(disk, name, format, size, destPool);
-    }
-
     public KvmPhysicalDisk copyPhysicalDisk(final KvmPhysicalDisk disk, final String name, final KvmStoragePool destPool, final int timeout) {
         final StorageAdaptor adaptor = getStorageAdaptor(destPool.getType());
         return adaptor.copyPhysicalDisk(disk, name, destPool, timeout);
-    }
-
-    public KvmPhysicalDisk createDiskFromSnapshot(final KvmPhysicalDisk snapshot, final String snapshotName, final String name,
-                                                  final KvmStoragePool destPool) {
-        final StorageAdaptor adaptor = getStorageAdaptor(destPool.getType());
-        return adaptor.createDiskFromSnapshot(snapshot, snapshotName, name, destPool);
     }
 
     private class StoragePoolInformation {

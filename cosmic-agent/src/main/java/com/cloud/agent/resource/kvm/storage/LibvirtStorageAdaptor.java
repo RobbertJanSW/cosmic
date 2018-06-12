@@ -84,8 +84,6 @@ public class LibvirtStorageAdaptor implements StorageAdaptor {
             StoragePoolType type = null;
             if (spd.getPoolType() == LibvirtStoragePoolDef.PoolType.NETFS) {
                 type = StoragePoolType.NetworkFilesystem;
-            } else if (spd.getPoolType() == LibvirtStoragePoolDef.PoolType.DIR) {
-                type = StoragePoolType.Filesystem;
             } else if (spd.getPoolType() == LibvirtStoragePoolDef.PoolType.RBD) {
                 type = StoragePoolType.RBD;
             } else if (spd.getPoolType() == LibvirtStoragePoolDef.PoolType.LOGICAL) {
@@ -151,12 +149,7 @@ public class LibvirtStorageAdaptor implements StorageAdaptor {
             if (pool.getType() == StoragePoolType.RBD) {
                 disk.setFormat(PhysicalDiskFormat.RAW);
             } else if (voldef.getFormat() == null) {
-                final File diskDir = new File(disk.getPath());
-                if (diskDir.exists() && diskDir.isDirectory()) {
-                    disk.setFormat(PhysicalDiskFormat.DIR);
-                } else if (volumeUuid.endsWith("tar") || volumeUuid.endsWith("TAR")) {
-                    disk.setFormat(PhysicalDiskFormat.TAR);
-                } else if (volumeUuid.endsWith("raw") || volumeUuid.endsWith("RAW")) {
+                if (volumeUuid.endsWith("raw") || volumeUuid.endsWith("RAW")) {
                     disk.setFormat(PhysicalDiskFormat.RAW);
                 } else {
                     disk.setFormat(pool.getDefaultFormat());
@@ -517,10 +510,6 @@ public class LibvirtStorageAdaptor implements StorageAdaptor {
                         return createPhysicalDiskByQemuImg(name, pool, format, provisioningType, size);
                     case RAW:
                         return createPhysicalDiskByQemuImg(name, pool, format, provisioningType, size);
-                    case DIR:
-                        return createPhysicalDiskByLibVirt(name, pool, format, size);
-                    case TAR:
-                        return createPhysicalDiskByLibVirt(name, pool, format, size);
                     default:
                         throw new CloudRuntimeException("Unexpected disk format is specified.");
                 }
@@ -714,11 +703,7 @@ public class LibvirtStorageAdaptor implements StorageAdaptor {
         try {
             final StorageVol vol = getVolume(libvirtPool.getPool(), uuid);
             this.logger.debug("Instructing libvirt to remove volume " + uuid + " from pool " + pool.getUuid());
-            if (ImageFormat.DIR.equals(format)) {
-                deleteDirVol(vol);
-            } else {
-                deleteVol(vol);
-            }
+            deleteVol(vol);
             vol.free();
             return true;
         } catch (final LibvirtException e) {
@@ -784,13 +769,7 @@ public class LibvirtStorageAdaptor implements StorageAdaptor {
                 if (disk == null) {
                     throw new CloudRuntimeException("Failed to create disk from template " + template.getName());
                 }
-                if (template.getFormat() == PhysicalDiskFormat.TAR) {
-                    Script.runSimpleBashScript("tar -x -f " + template.getPath() + " -C " + disk.getPath(), timeout);
-                } else if (template.getFormat() == PhysicalDiskFormat.DIR) {
-                    Script.runSimpleBashScript("mkdir -p " + disk.getPath());
-                    Script.runSimpleBashScript("chmod 755 " + disk.getPath());
-                    Script.runSimpleBashScript("tar -x -f " + template.getPath() + "/*.tar -C " + disk.getPath(), timeout);
-                } else if (format == PhysicalDiskFormat.QCOW2) {
+                if (format == PhysicalDiskFormat.QCOW2) {
                     final QemuImg qemu = new QemuImg(timeout);
                     final QemuImgFile destFile = new QemuImgFile(disk.getPath(), format);
                     if (size > template.getVirtualSize()) {
@@ -1047,12 +1026,7 @@ public class LibvirtStorageAdaptor implements StorageAdaptor {
         this.logger.debug("copyPhysicalDisk: disk size:" + disk.getSize() + ", virtualsize:" + disk.getVirtualSize()
                 + " format:" + disk.getFormat());
         if (destPool.getType() != StoragePoolType.RBD) {
-            if (disk.getFormat() == PhysicalDiskFormat.TAR) {
-                newDisk = destPool.createPhysicalDisk(name, PhysicalDiskFormat.DIR, StorageProvisioningType.THIN,
-                        disk.getVirtualSize());
-            } else {
-                newDisk = destPool.createPhysicalDisk(name, StorageProvisioningType.THIN, disk.getVirtualSize());
-            }
+            newDisk = destPool.createPhysicalDisk(name, StorageProvisioningType.THIN, disk.getVirtualSize());
         } else {
             newDisk = new KvmPhysicalDisk(destPool.getSourceDir() + "/" + name, name, destPool);
             newDisk.setFormat(PhysicalDiskFormat.RAW);
@@ -1068,44 +1042,34 @@ public class LibvirtStorageAdaptor implements StorageAdaptor {
         QemuImgFile destFile = null;
 
         if (srcPool.getType() != StoragePoolType.RBD && destPool.getType() != StoragePoolType.RBD) {
-            if (sourceFormat == PhysicalDiskFormat.TAR && destFormat == PhysicalDiskFormat.DIR) { // LXC template
-                Script.runSimpleBashScript("cp " + sourcePath + " " + destPath);
-            } else if (sourceFormat == PhysicalDiskFormat.TAR) {
-                Script.runSimpleBashScript("tar -x -f " + sourcePath + " -C " + destPath, timeout);
-            } else if (sourceFormat == PhysicalDiskFormat.DIR) {
-                Script.runSimpleBashScript("mkdir -p " + destPath);
-                Script.runSimpleBashScript("chmod 755 " + destPath);
-                Script.runSimpleBashScript("cp -p -r " + sourcePath + "/* " + destPath, timeout);
-            } else {
-                srcFile = new QemuImgFile(sourcePath, sourceFormat);
-                try {
-                    final Map<String, String> info = qemu.info(srcFile);
-                    final String backingFile = info.get("backing_file");
-                    // qcow2 templates can just be copied into place
-                    if (sourceFormat.equals(destFormat) && backingFile == null && sourcePath.endsWith(".qcow2")) {
-                        final String result = Script.runSimpleBashScript("cp -f " + sourcePath + " " + destPath, timeout);
-                        if (result != null) {
-                            throw new CloudRuntimeException("Failed to create disk: " + result);
-                        }
-                    } else {
-                        destFile = new QemuImgFile(destPath, destFormat);
-                        try {
-                            qemu.convert(srcFile, destFile);
-                            final Map<String, String> destInfo = qemu.info(destFile);
-                            final Long virtualSize = Long.parseLong(destInfo.get("virtual_size"));
-                            newDisk.setVirtualSize(virtualSize);
-                            newDisk.setSize(virtualSize);
-                        } catch (final QemuImgException e) {
-                            this.logger.error("Failed to convert " + srcFile.getFileName() + " to " + destFile.getFileName()
-                                    + " the error was: " + e.getMessage());
-                            newDisk = null;
-                        }
+            srcFile = new QemuImgFile(sourcePath, sourceFormat);
+            try {
+                final Map<String, String> info = qemu.info(srcFile);
+                final String backingFile = info.get("backing_file");
+                // qcow2 templates can just be copied into place
+                if (sourceFormat.equals(destFormat) && backingFile == null && sourcePath.endsWith(".qcow2")) {
+                    final String result = Script.runSimpleBashScript("cp -f " + sourcePath + " " + destPath, timeout);
+                    if (result != null) {
+                        throw new CloudRuntimeException("Failed to create disk: " + result);
                     }
-                } catch (final QemuImgException e) {
-                    this.logger.error(
-                            "Failed to fetch the information of file " + srcFile.getFileName() + " the error was: " + e.getMessage());
-                    newDisk = null;
+                } else {
+                    destFile = new QemuImgFile(destPath, destFormat);
+                    try {
+                        qemu.convert(srcFile, destFile);
+                        final Map<String, String> destInfo = qemu.info(destFile);
+                        final Long virtualSize = Long.parseLong(destInfo.get("virtual_size"));
+                        newDisk.setVirtualSize(virtualSize);
+                        newDisk.setSize(virtualSize);
+                    } catch (final QemuImgException e) {
+                        this.logger.error("Failed to convert " + srcFile.getFileName() + " to " + destFile.getFileName()
+                                + " the error was: " + e.getMessage());
+                        newDisk = null;
+                    }
                 }
+            } catch (final QemuImgException e) {
+                this.logger.error(
+                        "Failed to fetch the information of file " + srcFile.getFileName() + " the error was: " + e.getMessage());
+                newDisk = null;
             }
         } else if (srcPool.getType() != StoragePoolType.RBD && destPool.getType() == StoragePoolType.RBD) {
             /**

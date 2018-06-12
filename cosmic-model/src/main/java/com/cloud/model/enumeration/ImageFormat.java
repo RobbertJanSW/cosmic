@@ -5,12 +5,7 @@ public enum ImageFormat {
     RAW("raw"),
     VHD("vhd"),
     ISO("iso"),
-    OVA("ova"),
-    VHDX("vhdx"),
-    VMDK("vmdk"),
-    VDI("vdi"),
-    TAR("tar"),
-    DIR("dir");
+    VDI("vdi");
 
     private final String fileExtension;
 

@@ -9,7 +9,6 @@ import com.cloud.agent.service.AgentConfiguration;
 import com.cloud.common.storageprocessor.Processor;
 import com.cloud.common.storageprocessor.QCOW2Processor;
 import com.cloud.common.storageprocessor.RawImageProcessor;
-import com.cloud.common.storageprocessor.TARProcessor;
 import com.cloud.common.storageprocessor.TemplateConstants;
 import com.cloud.common.storageprocessor.TemplateLocation;
 import com.cloud.common.storageprocessor.VhdProcessor;
@@ -520,8 +519,6 @@ public class NfsSecondaryStorageResource extends AgentResourceBase implements Se
                 return ImageFormat.VHD;
             } else if (ext.equalsIgnoreCase("qcow2")) {
                 return ImageFormat.QCOW2;
-            } else if (ext.equalsIgnoreCase("tar")) {
-                return ImageFormat.TAR;
             } else if (ext.equalsIgnoreCase("img") || ext.equalsIgnoreCase("raw")) {
                 return ImageFormat.RAW;
             } else if (ext.equalsIgnoreCase("vdi")) {
@@ -530,36 +527,6 @@ public class NfsSecondaryStorageResource extends AgentResourceBase implements Se
         }
 
         return null;
-    }
-
-    protected long getVirtualSize(final File file, final ImageFormat format) {
-        Processor processor = null;
-        try {
-            if (format == null) {
-                return file.length();
-            } else if (format == ImageFormat.QCOW2) {
-                processor = new QCOW2Processor();
-            } else if (format == ImageFormat.VHD) {
-                processor = new VhdProcessor();
-            } else if (format == ImageFormat.RAW) {
-                processor = new RawImageProcessor();
-            }
-            if (format == ImageFormat.TAR) {
-                processor = new TARProcessor();
-            }
-
-            if (processor == null) {
-                return file.length();
-            }
-
-            final Map<String, Object> params = new HashMap<>();
-            params.put(StorageLayer.InstanceConfigKey, this._storage);
-            processor.configure("template processor", params);
-            return processor.getVirtualSize(file);
-        } catch (final Exception e) {
-            s_logger.warn("Failed to get virtual size of file " + file.getPath() + ", returning file size instead: ", e);
-            return file.length();
-        }
     }
 
     public Answer execute(final DeleteSnapshotsDirCommand cmd) {

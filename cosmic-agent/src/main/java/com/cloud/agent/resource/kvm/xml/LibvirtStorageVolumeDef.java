@@ -49,7 +49,7 @@ public class LibvirtStorageVolumeDef {
     }
 
     public enum VolumeFormat {
-        RAW("raw"), QCOW2("qcow2"), DIR("dir"), TAR("tar");
+        RAW("raw"), QCOW2("qcow2");
         private final String format;
 
         VolumeFormat(final String format) {
@@ -64,10 +64,6 @@ public class LibvirtStorageVolumeDef {
                 return RAW;
             } else if (format.equalsIgnoreCase("qcow2")) {
                 return QCOW2;
-            } else if (format.equalsIgnoreCase("dir")) {
-                return DIR;
-            } else if (format.equalsIgnoreCase("tar")) {
-                return TAR;
             }
             return null;
         }
@@ -78,10 +74,6 @@ public class LibvirtStorageVolumeDef {
                     return RAW;
                 case QCOW2:
                     return QCOW2;
-                case DIR:
-                    return DIR;
-                case TAR:
-                    return TAR;
                 default:
                     throw new NotImplementedException();
             }

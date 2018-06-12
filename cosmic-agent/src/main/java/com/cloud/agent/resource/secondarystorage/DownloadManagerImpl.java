@@ -4,7 +4,6 @@ import com.cloud.common.storageprocessor.IsoProcessor;
 import com.cloud.common.storageprocessor.Processor;
 import com.cloud.common.storageprocessor.QCOW2Processor;
 import com.cloud.common.storageprocessor.RawImageProcessor;
-import com.cloud.common.storageprocessor.TARProcessor;
 import com.cloud.common.storageprocessor.TemplateConstants;
 import com.cloud.common.storageprocessor.TemplateLocation;
 import com.cloud.common.storageprocessor.VhdProcessor;
@@ -737,10 +736,6 @@ public class DownloadManagerImpl extends ManagerBase implements DownloadManager 
         processor = new RawImageProcessor();
         processor.configure("Raw Image Processor", params);
         this._processors.put("Raw Image Processor", processor);
-
-        processor = new TARProcessor();
-        processor.configure("TAR Processor", params);
-        this._processors.put("TAR Processor", processor);
 
         this._templateDir = (String) params.get("public.templates.root.dir");
         if (this._templateDir == null) {
