@@ -1483,7 +1483,8 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Vir
                 throw new CloudRuntimeException("Router start failed due to" + ex);
             } finally {
                 s_logger.info("Rebooting vm " + vm.getInstanceName());
-                _itMgr.reboot(vm.getUuid(), null);
+                _itMgr.stop(vm.getUuid());
+                _itMgr.start(vm.getUuid(), null);
             }
             return _vmDao.findById(vmId);
         } else {
