@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
@@ -67,11 +68,20 @@ public class ConsoleProxyAjaxHandler implements HttpHandler {
         final String username = queryMap.get("username");
         final String password = queryMap.get("password");
         final String tokenCreationTimestampString = queryMap.get("tokenCreationTimestamp");
+        final String ipAddress = queryMap.get("ipAddress");
 
         // Assume expiry when no timestamp is found
         if (tokenCreationTimestampString == null) {
             s_logger.warn("tokenCreationTimestampString is null: session expired");
             sendResponse(t, "text/html", "Expired ajax client session id");
+            return;
+        }
+
+        final InetAddress remoteAddress = t.getRemoteAddress().getAddress();
+        // Fail request when ip address does not match
+        if (!ipAddress.equals(remoteAddress.getHostAddress())) {
+            s_logger.warn("Token created for ip " + ipAddress + " and request comes from " + remoteAddress.getHostAddress() + " so not allowed!");
+            sendResponse(t, "text/html", "Invalid ajax client session");
             return;
         }
 
@@ -145,7 +155,7 @@ public class ConsoleProxyAjaxHandler implements HttpHandler {
             param.setUsername(username);
             param.setPassword(password);
             param.setTokenCreationTimestamp(Long.parseLong(tokenCreationTimestampString));
-
+            param.setIpAddress(ipAddress);
             viewer = ConsoleProxy.getAjaxVncViewer(param, ajaxSessionIdStr);
         } catch (final Exception e) {
 

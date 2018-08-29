@@ -18,6 +18,7 @@ public class ConsoleProxyClientParam {
 
     private String username;
     private String password;
+    private String ipAddress;
 
     private Long tokenCreationTimestamp;
 
@@ -131,4 +132,17 @@ public class ConsoleProxyClientParam {
     public void setTokenCreationTimestamp(final long tokenCreationTimestamp) {
         this.tokenCreationTimestamp = tokenCreationTimestamp;
     }
+
+    public void setTokenCreationTimestamp(final Long tokenCreationTimestamp) {
+        this.tokenCreationTimestamp = tokenCreationTimestamp;
+    }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(final String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
 }

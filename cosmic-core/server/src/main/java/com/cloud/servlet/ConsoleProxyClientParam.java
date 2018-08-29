@@ -16,6 +16,7 @@ public class ConsoleProxyClientParam {
     private String password;
 
     private long tokenCreationTimestamp;
+    private String ipAddress;
 
     public ConsoleProxyClientParam() {
         clientHostPort = 0;
@@ -123,5 +124,13 @@ public class ConsoleProxyClientParam {
 
     public void setTokenCreationTimestamp(final long tokenCreationTimestamp) {
         this.tokenCreationTimestamp = tokenCreationTimestamp;
+    }
+
+    public String getIpAddress() {
+        return this.ipAddress;
+    }
+
+    public void setIpAddress(final String ipAddress) {
+        this.ipAddress = ipAddress;
     }
 }

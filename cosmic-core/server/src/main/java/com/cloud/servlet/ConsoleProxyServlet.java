@@ -30,7 +30,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -190,6 +192,7 @@ public class ConsoleProxyServlet extends HttpServlet {
 
         final Map<String, Object[]> params = new HashMap<>();
         params.putAll(req.getParameterMap());
+        req.getRemoteAddr();
 
         final HttpSession session = req.getSession(false);
         if (session == null) {
@@ -302,7 +305,7 @@ public class ConsoleProxyServlet extends HttpServlet {
         }
 
         try {
-            resp.sendRedirect(composeThumbnailUrl(rootUrl, vm, host, w, h));
+            resp.sendRedirect(composeThumbnailUrl(rootUrl, vm, host, w, h, req));
         } catch (final IOException e) {
             s_logger.info("Client may already close the connection", e);
         }
@@ -345,7 +348,7 @@ public class ConsoleProxyServlet extends HttpServlet {
         }
 
         final StringBuffer sb = new StringBuffer();
-        sb.append("<html><title>").append(escapeHTML(vmName)).append("</title><frameset><frame src=\"").append(composeConsoleAccessUrl(rootUrl, vm, host));
+        sb.append("<html><title>").append(escapeHTML(vmName)).append("</title><frameset><frame src=\"").append(composeConsoleAccessUrl(rootUrl, vm, host, req));
         sb.append("\"></frame></frameset></html>");
         s_logger.debug("the console url is :: " + sb.toString());
         sendResponse(resp, sb.toString());
@@ -393,7 +396,7 @@ public class ConsoleProxyServlet extends HttpServlet {
         return _gson.toJson(keyIvPair);
     }
 
-    private String composeThumbnailUrl(final String rootUrl, final VirtualMachine vm, final HostVO hostVo, final int w, final int h) {
+    private String composeThumbnailUrl(final String rootUrl, final VirtualMachine vm, final HostVO hostVo, final int w, final int h, final HttpServletRequest req) {
         final StringBuffer sb = new StringBuffer(rootUrl);
 
         final String host = hostVo.getPrivateIpAddress();
@@ -411,12 +414,15 @@ public class ConsoleProxyServlet extends HttpServlet {
         final String authkey = _keysMgr.getAuthenticationKey();
         final ConsoleProxyPasswordBasedEncryptor encryptor = new ConsoleProxyPasswordBasedEncryptor(getEncryptorPassword(), authkey);
         final ConsoleProxyClientParam param = new ConsoleProxyClientParam();
+        String ipAddress = req.getRemoteAddr();
+        ipAddress = getTokenIpAddress(ipAddress);
         param.setClientHostAddress(parsedHostInfo.first());
         param.setClientHostPort(portInfo.second());
         param.setClientHostPassword(sid);
         param.setClientTag(tag);
         param.setTicket(ticket);
         param.setTokenCreationTimestamp(System.currentTimeMillis() / 1000);
+        param.setIpAddress(ipAddress);
 
         if (portInfo.second() == -9) {
             param.setUsername(_ms.findDetail(hostVo.getId(), "username").getValue());
@@ -436,7 +442,23 @@ public class ConsoleProxyServlet extends HttpServlet {
         return sb.toString();
     }
 
-    private String composeConsoleAccessUrl(final String rootUrl, final VirtualMachine vm, final HostVO hostVo) {
+    private String getTokenIpAddress(String ipAddress) {
+        try {
+            final InetAddress ipAddressInet = InetAddress.getByName(ipAddress);
+            if (ipAddressInet.isSiteLocalAddress()) {
+                s_logger.debug("IpAddress " + ipAddress + " is RFC1918 and most likely bubble so set to 100.64.0.1 in token.");
+                ipAddress = "100.64.0.1";
+            } else {
+                s_logger.debug("IpAddress " + ipAddress + " is internet routable so using that in our token.");
+            }
+        } catch (UnknownHostException e) {
+            s_logger.debug("Exception while checking ip! Most likely bubble so set to 100.64.0.1");
+            ipAddress = "100.64.0.1";
+        }
+        return ipAddress;
+    }
+
+    private String composeConsoleAccessUrl(final String rootUrl, final VirtualMachine vm, final HostVO hostVo, final HttpServletRequest req) {
         final StringBuffer sb = new StringBuffer(rootUrl);
         final String host = hostVo.getPrivateIpAddress();
 
@@ -458,12 +480,15 @@ public class ConsoleProxyServlet extends HttpServlet {
         final String authkey = _keysMgr.getAuthenticationKey();
         final ConsoleProxyPasswordBasedEncryptor encryptor = new ConsoleProxyPasswordBasedEncryptor(getEncryptorPassword(), authkey);
         final ConsoleProxyClientParam param = new ConsoleProxyClientParam();
+        String ipAddress = req.getRemoteAddr();
+        ipAddress = getTokenIpAddress(ipAddress);
         param.setClientHostAddress(parsedHostInfo.first());
         param.setClientHostPort(port);
         param.setClientHostPassword(sid);
         param.setClientTag(tag);
         param.setTicket(ticket);
         param.setTokenCreationTimestamp(System.currentTimeMillis() / 1000);
+        param.setIpAddress(ipAddress);
 
         if (details != null) {
             param.setLocale(details.getValue());
