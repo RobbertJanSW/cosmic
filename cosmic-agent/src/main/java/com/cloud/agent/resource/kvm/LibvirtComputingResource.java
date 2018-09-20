@@ -128,6 +128,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URISyntaxException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1269,6 +1271,10 @@ public class LibvirtComputingResource extends AgentResourceBase implements Agent
         }
     }
 
+    public String getCurrentLocalDateTimeStamp() {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+    }
+
     public LibvirtVmDef createVmFromSpec(final VirtualMachineTO vmTo) {
         final LibvirtVmDef vm = new LibvirtVmDef();
         vm.setDomainName(vmTo.getName());
@@ -1282,6 +1288,8 @@ public class LibvirtComputingResource extends AgentResourceBase implements Agent
         if (metadataTo != null) {
             final MetadataDef metadata = new MetadataDef();
             metadata.getNodes().put("domainUuid", metadataTo.getDomainUuid());
+            metadata.getNodes().put("cosmicVersion", LibvirtComputingResource.class.getPackage().getImplementationVersion());
+            metadata.getNodes().put("generateDateTime", getCurrentLocalDateTimeStamp());
             vm.addComponent(metadata);
         }
 
