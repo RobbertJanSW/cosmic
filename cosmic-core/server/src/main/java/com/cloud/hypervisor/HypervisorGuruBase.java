@@ -144,6 +144,7 @@ public abstract class HypervisorGuruBase extends AdapterBase implements Hypervis
         metadataTO.setCosmicDomainPath(domain.getPath());
         metadataTO.setInstanceName(vm.getInstanceName());
         metadataTO.setVmId(vm.getId());
+        metadataTO.setHostname(vm.getHostName());
 
         final Map<String, String> resourceDetails = ApiDBUtils.getResourceDetails(vm.getId(), ResourceTag.ResourceObjectType.UserVm);
         final Map<String, String> resourceTags = new HashMap<String, String>();
