@@ -129,6 +129,9 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1275,6 +1278,12 @@ public class LibvirtComputingResource extends AgentResourceBase implements Agent
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
     }
 
+    public Long getCurrentEpoch() {
+        ZonedDateTime zdtNow = ZonedDateTime.now(ZoneOffset.UTC);
+        return zdtNow.with(LocalTime.MIDNIGHT).toInstant().toEpochMilli();
+
+    }
+
     public LibvirtVmDef createVmFromSpec(final VirtualMachineTO vmTo) {
         final LibvirtVmDef vm = new LibvirtVmDef();
         vm.setDomainName(vmTo.getName());
@@ -1290,6 +1299,7 @@ public class LibvirtComputingResource extends AgentResourceBase implements Agent
             metadata.getNodes().put("domainUuid", metadataTo.getDomainUuid());
             metadata.getNodes().put("cosmicVersion", LibvirtComputingResource.class.getPackage().getImplementationVersion());
             metadata.getNodes().put("generateDateTime", getCurrentLocalDateTimeStamp());
+            metadata.getNodes().put("generatedEpoch", getCurrentEpoch());
             vm.addComponent(metadata);
         }
 
